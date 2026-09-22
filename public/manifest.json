@@ -1,0 +1,16 @@
+{
+  "name": "伴学小账 BentoCare",
+  "short_name": "伴学小账",
+  "description": "孩子在校/托管考勤退费记账本",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

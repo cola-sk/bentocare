@@ -1,0 +1,78 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 孩子档案
+model Child {
+  id          String             @id @default(cuid())
+  name        String
+  avatar      String?            @default("👶")
+  grade       String?            @default("一年级")
+  isDefault   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  items       ServiceItem[]
+  attendances AttendanceRecord[]
+  prepaids    PrepaidRecord[]
+}
+
+// 托管/就餐等服务项目
+model ServiceItem {
+  id           String             @id @default(cuid())
+  childId      String
+  child        Child              @relation(fields: [childId], references: [id], onDelete: Cascade)
+  name         String             // 项目名，如：学校午餐、小饭桌、晚托、校车接送
+  icon         String             @default("🍱")
+  color        String             @default("#f97316")
+  billingType  String             @default("PER_MONTH") // PER_DAY (按天计费) | PER_MONTH (按月预付+缺勤退费)
+  dayPrice     Float              @default(0) // 单日单价 (元/天)
+  monthPrice   Float              @default(0) // 包月单价 (元/月)
+  refundPerDay Float              @default(0) // 缺勤退费基准 (元/天)
+  refundMode   String             @default("FIXED") // FIXED(固定单日额) | WORKDAY_DIVIDED(按当月工作日折算)
+  isActive     Boolean            @default(true)
+  sortOrder    Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  attendances  AttendanceRecord[]
+  prepaids     PrepaidRecord[]
+}
+
+// 每日打卡考勤
+model AttendanceRecord {
+  id        String      @id @default(cuid())
+  childId   String
+  child     Child       @relation(fields: [childId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      ServiceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  date      String      // YYYY-MM-DD
+  status    String      // PRESENT(出勤/用餐) | ABSENT(请假/缺席) | OFF(休息/非托管)
+  notes     String?     // 请假原因或备注
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([childId, itemId, date])
+  @@index([childId, date])
+}
+
+// 月度预付款记录
+model PrepaidRecord {
+  id        String      @id @default(cuid())
+  childId   String
+  child     Child       @relation(fields: [childId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      ServiceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  month     String      // YYYY-MM
+  amount    Float       // 实际预付金额
+  isPaid    Boolean     @default(true)
+  notes     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([childId, itemId, month])
+}

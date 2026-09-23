@@ -57,12 +57,12 @@ export function BillShareModal({ summary, onClose }: BillShareModalProps) {
     for (const ib of summary.itemBills) {
       rows.push([
         ib.item.name,
-        `${ib.defaultChildCount || 1}人`,
+        `${ib.defaultChildCount || 1}人次`,
         ib.item.billingType === 'PER_MONTH' ? '按月预付+退费' : '按天计费',
         `${ib.presentDays}天 (${ib.presentPersonDays}人天)`,
         `${ib.absentDays}天 (${ib.absentPersonDays}人天)`,
         `¥${ib.prepaidAmount}`,
-        `-¥${ib.refundAmount}`,
+        ib.refundAmount > 0 ? `-¥${ib.refundAmount}` : '¥0',
         `¥${ib.actualUsedAmount}`,
       ]);
     }
@@ -70,7 +70,7 @@ export function BillShareModal({ summary, onClose }: BillShareModalProps) {
     rows.push(['']);
     rows.push(['汇总数据']);
     rows.push(['预付总额', `¥${summary.totalPrepaid}`]);
-    rows.push(['缺勤总退款', `-¥${summary.totalRefund}`]);
+    rows.push(['缺勤总退款', summary.totalRefund > 0 ? `-¥${summary.totalRefund}` : '¥0']);
     rows.push(['按天总消费', `+¥${summary.totalPerDayCost}`]);
     rows.push(['实际应付总额', `¥${summary.totalActualCost}`]);
     rows.push(['结算结余差额', `¥${summary.finalBalance}`]);
@@ -83,7 +83,7 @@ export function BillShareModal({ summary, onClose }: BillShareModalProps) {
       for (const ad of ib.absentDates) {
         const cCount = ad.childCount || 1;
         const ref = ad.refund ?? (cCount * ib.effectiveRefundPerDay);
-        rows.push([ib.item.name, ad.date, `${cCount}人`, `-¥${ref}`, ad.notes || '请假']);
+        rows.push([ib.item.name, ad.date, `${cCount}人次`, ref > 0 ? `-¥${ref}` : '无退费', ad.notes || '请假']);
       }
     }
 
@@ -141,7 +141,7 @@ export function BillShareModal({ summary, onClose }: BillShareModalProps) {
               <div className="text-2xl font-bold text-stone-900 mt-0.5">¥{summary.totalActualCost.toFixed(2)}</div>
               <div className="flex items-center justify-center gap-3 mt-1.5 text-[10px] text-stone-600 pt-1.5 border-t border-amber-200/40">
                 <span>预付 ¥{summary.totalPrepaid}</span>
-                <span className="text-rose-600 font-medium">退费 -¥{summary.totalRefund}</span>
+                <span className="text-rose-600 font-medium">退费 {summary.totalRefund > 0 ? `-¥${summary.totalRefund}` : '¥0'}</span>
                 <span>按天 +¥{summary.totalPerDayCost}</span>
               </div>
             </div>
@@ -183,7 +183,7 @@ export function BillShareModal({ summary, onClose }: BillShareModalProps) {
                           {ad.date} [{ib.item.name}] {ad.notes ? `(${ad.notes})` : ''}
                         </span>
                         <span className="text-rose-600 font-medium">
-                          -¥{refundVal}
+                          {refundVal > 0 ? `-¥${refundVal}` : '无退费'}
                         </span>
                       </div>
                     );

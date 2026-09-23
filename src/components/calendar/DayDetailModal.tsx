@@ -119,7 +119,7 @@ export function DayDetailModal({
             onClick={() => handleBatchAll('ABSENT', '请假未到')}
             className="py-1.5 px-3 rounded-lg bg-rose-50/60 hover:bg-rose-50 text-rose-700 font-medium text-xs border border-rose-200/60 transition-colors"
           >
-            今日全部请假 (退费)
+            今日全部请假
           </button>
         </div>
 
@@ -138,7 +138,7 @@ export function DayDetailModal({
 
             const isMonth = item.billingType === 'PER_MONTH';
             const dayCost = (childCount * item.dayPrice).toFixed(1);
-            const dayRefund = (childCount * item.refundPerDay).toFixed(1);
+            const dayRefund = childCount * item.refundPerDay;
 
             return (
               <div
@@ -168,16 +168,18 @@ export function DayDetailModal({
                       </div>
                       <div className="text-[10px] text-stone-400">
                         {isMonth
-                          ? `包月 ¥${item.monthPrice}/人 · 缺勤退 ¥${item.refundPerDay}/人/天`
+                          ? item.refundPerDay > 0
+                            ? `包月 ¥${item.monthPrice}/人 · 缺勤退 ¥${item.refundPerDay}/人/天`
+                            : `包月 ¥${item.monthPrice}/人`
                           : `按天计费 ¥${item.dayPrice}/人/天`}
                       </div>
                     </div>
                   </div>
 
                   {/* 状态结算指示 */}
-                  {status === 'ABSENT' && isMonth && (
+                  {status === 'ABSENT' && isMonth && dayRefund > 0 && (
                     <span className="text-xs font-medium text-rose-600">
-                      -¥{dayRefund}
+                      -¥{dayRefund.toFixed(1)}
                     </span>
                   )}
                   {status === 'PRESENT' && !isMonth && (
@@ -235,7 +237,7 @@ export function DayDetailModal({
                     >
                       -
                     </button>
-                    <span className="font-medium px-1">{childCount}人</span>
+                    <span className="font-medium px-1">{childCount}人次</span>
                     <button
                       type="button"
                       onClick={() => handleChildCountChange(item, childCount + 1)}

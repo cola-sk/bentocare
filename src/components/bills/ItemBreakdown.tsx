@@ -23,6 +23,7 @@ function ItemBillCard({ ib }: { ib: ItemMonthlyBill }) {
   const [isAbsentExpanded, setIsAbsentExpanded] = useState(false);
   const { item } = ib;
   const isMonth = item.billingType === 'PER_MONTH';
+  const hasRefund = ib.refundAmount > 0;
   const daysLabel = formatDaysType(ib.applicableDays);
 
   return (
@@ -37,7 +38,7 @@ function ItemBillCard({ ib }: { ib: ItemMonthlyBill }) {
             <div className="text-xs font-semibold text-stone-900 flex items-center gap-1.5 flex-wrap">
               <span>{item.name}</span>
               <span className="text-[10px] text-stone-600 bg-stone-100 px-1.5 py-0.2 rounded font-normal">
-                {ib.defaultChildCount || 1}人
+                {ib.defaultChildCount || 1}人次
               </span>
               <span className="text-[10px] text-stone-600 bg-stone-100 px-1.5 py-0.2 rounded font-normal">
                 {daysLabel}
@@ -90,17 +91,19 @@ function ItemBillCard({ ib }: { ib: ItemMonthlyBill }) {
               <span className="text-stone-400">预付包月:</span>
               <span>¥{ib.prepaidAmount}</span>
             </div>
-            <div className="flex items-center justify-between text-rose-600">
-              <span>
-                缺勤退费 ({ib.absentPersonDays}人天 × ¥{ib.effectiveRefundPerDay}
-                {item.refundMode === 'FIXED_DAYS_DIVIDED' ? ` · 固定${item.refundFixedDays || 22}天折算` : ''}
-                {item.refundMode === 'WORKDAY_DIVIDED' ? ` · ${ib.calculatedDaysCount}天工作日折算` : ''}
-                {item.refundMode === 'CALENDAR_DIVIDED' ? ` · 自然天数折算` : ''}
-                ):
-              </span>
-              <span>-¥{ib.refundAmount}</span>
-            </div>
-            <div className="w-full h-px bg-stone-200/70 my-0.5" />
+            {hasRefund && <>
+              <div className="flex items-center justify-between text-rose-600">
+                <span>
+                  缺勤退费 ({ib.absentPersonDays}人天 × ¥{ib.effectiveRefundPerDay}
+                  {item.refundMode === 'FIXED_DAYS_DIVIDED' ? ` · 固定${item.refundFixedDays || 22}天折算` : ''}
+                  {item.refundMode === 'WORKDAY_DIVIDED' ? ` · ${ib.calculatedDaysCount}天工作日折算` : ''}
+                  {item.refundMode === 'CALENDAR_DIVIDED' ? ` · 自然天数折算` : ''}
+                  ):
+                </span>
+                <span>-¥{ib.refundAmount}</span>
+              </div>
+              <div className="w-full h-px bg-stone-200/70 my-0.5" />
+            </>}
             <div className="flex items-center justify-between font-semibold text-stone-800">
               <span>净应付额:</span>
               <span className="text-brand-700">¥{ib.actualUsedAmount}</span>
@@ -125,7 +128,7 @@ function ItemBillCard({ ib }: { ib: ItemMonthlyBill }) {
             <span className="flex items-center gap-1.5 font-medium">
               <span className="text-stone-700">请假消费记录</span>
               <span className="text-[10px] text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded font-normal">
-                共 {ib.absentDates.length} 天 · 退 -¥{ib.refundAmount}
+                共 {ib.absentDates.length} 天 · {hasRefund ? `退 -¥${ib.refundAmount}` : '无退费'}
               </span>
             </span>
             <span className="flex items-center gap-0.5 text-[10px] text-stone-400">
@@ -146,10 +149,10 @@ function ItemBillCard({ ib }: { ib: ItemMonthlyBill }) {
                   >
                     <div className="flex items-center gap-1.5">
                       <span className="font-medium text-stone-800">{ad.date}</span>
-                      <span className="text-[10px] text-stone-400">({cCount}人)</span>
+                      <span className="text-[10px] text-stone-400">({cCount}人次)</span>
                       {ad.notes && <span className="text-stone-500">· {ad.notes}</span>}
                     </div>
-                    <span className="font-medium text-rose-600">-¥{refundVal}</span>
+                    <span className="font-medium text-rose-600">{refundVal > 0 ? `-¥${refundVal}` : '无退费'}</span>
                   </div>
                 );
               })}
@@ -182,4 +185,3 @@ export function ItemBreakdown({ itemBills }: ItemBreakdownProps) {
     </div>
   );
 }
-

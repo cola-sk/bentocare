@@ -153,7 +153,7 @@ export function ItemManager({
                       {it.billingType === 'PER_MONTH' ? '按月' : '按天'}
                     </span>
                     <span className="text-[9px] bg-stone-100 text-stone-600 px-1 py-0.2 rounded font-normal">
-                      {count}人
+                      {count}人次
                     </span>
                     <span className="text-[9px] bg-stone-100 text-stone-600 px-1 py-0.2 rounded font-normal">
                       {daysTag}
@@ -252,9 +252,9 @@ export function ItemManager({
               />
             </div>
 
-            {/* 默认孩子人数 */}
+            {/* 默认人次 */}
             <div>
-              <label className="text-[11px] font-medium text-stone-500 block mb-1">孩子人数 (默认)</label>
+              <label className="text-[11px] font-medium text-stone-500 block mb-1">默认人次</label>
               <div className="flex items-center gap-1.5">
                 {[1, 2, 3].map((num) => {
                   const isSelected = defaultChildCount === String(num);
@@ -269,7 +269,7 @@ export function ItemManager({
                           : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
                       }`}
                     >
-                      {num} 人
+                      {num} 人次
                     </button>
                   );
                 })}

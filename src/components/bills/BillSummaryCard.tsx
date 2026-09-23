@@ -60,7 +60,7 @@ export function BillSummaryCard({ summary, onOpenPrepaidModal }: BillSummaryCard
         <div className="border-x border-stone-200/70">
           <div className="text-[10px] text-stone-400">缺勤应退</div>
           <div className="text-xs font-semibold text-rose-600 mt-0.5">
-            -¥{summary.totalRefund.toFixed(0)}
+            {summary.totalRefund > 0 ? `-¥${summary.totalRefund.toFixed(0)}` : '¥0'}
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Child, ServiceItem, AttendanceRecord, PrepaidRecord, MonthlyBillSummary, AttendanceStatus } from '@/lib/types';
 import { DEFAULT_CHILD, DEFAULT_ITEMS, generateInitialAttendances } from '@/lib/sample-data';
 import { calculateMonthlySummary } from '@/lib/calculator';
@@ -47,6 +47,7 @@ export function useLedgerStore() {
 
   const [holidaySyncing, setHolidaySyncing] = useState(false);
   const [holidayVersion, setHolidayVersion] = useState(0);
+  const loadedRemoteMonths = useRef(new Set<string>());
 
   const keyForUser = useCallback((key: string) => `${key}:${user.id}`, [user.id]);
 
@@ -87,12 +88,8 @@ export function useLedgerStore() {
         setHolidayVersion((v) => v + 1);
       });
     } catch (e) {
-      console.warn('LocalStorage load error, fallback to defaults:', e);
-      setChildren([DEFAULT_CHILD]);
-      setItems(DEFAULT_ITEMS);
-      setAttendances(generateInitialAttendances(DEFAULT_CHILD.id, currentInitialMonth));
-    } catch (e) {
       console.warn('LocalStorage load error:', e);
+      void fetchLedgerFromApi(currentInitialMonth);
     }
   }, [keyForUser, user.id]);
 
@@ -125,9 +122,14 @@ export function useLedgerStore() {
         ]);
         setChildren(remoteChildren);
         setItems(itemResults.flatMap((result) => result.success ? result.data : []));
-        setAttendances(sanitizeAttendances(attendanceResults.flatMap((result) => result.success ? result.data : [])));
+        const remoteAttendances = sanitizeAttendances(attendanceResults.flatMap((result) => result.success ? result.data : []));
+        setAttendances((previous) => [
+          ...previous.filter((record) => !ids.includes(record.childId) || !record.date.startsWith(month)),
+          ...remoteAttendances,
+        ]);
         setPrepaids(prepaidResults.flatMap((result) => result.success ? result.data : []));
         setCurrentChildId((previous) => remoteChildren.some((child) => child.id === previous) ? previous : remoteChildren[0].id);
+        loadedRemoteMonths.current.add(month);
       }
     } catch (err) {
       console.warn('Ledger sync failed; using this user\'s local cache.', err);
@@ -135,6 +137,12 @@ export function useLedgerStore() {
       setLoading(false);
     }
   };
+
+  // 账本可以切换任意月份；首次进入该月时从当前用户的受保护接口补齐数据。
+  useEffect(() => {
+    if (!isClient || loading || loadedRemoteMonths.current.has(currentMonth)) return;
+    void fetchLedgerFromApi(currentMonth);
+  }, [currentMonth, isClient, loading]);
 
   const currentChild = useMemo(() => {
     return children.find((c) => c.id === currentChildId) || children[0] || DEFAULT_CHILD;
@@ -268,12 +276,28 @@ export function useLedgerStore() {
     }
 
     try {
-      await fetch('/api/children', {
+      const response = await fetch('/api/children', {
         method: isNew ? 'POST' : 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newChild),
       });
-    } catch (e) {}
+      const payload = await response.json();
+      if (!response.ok || !payload.success) throw new Error(payload.error || '保存孩子档案失败');
+
+      if (isNew) {
+        // 服务端会生成真实 ID 及默认项目；替换本地临时 ID，避免后续请求引用无效记录。
+        setChildren((prev) => prev.map((child) => child.id === id ? payload.data : child));
+        setItems((prev) => prev.filter((item) => item.childId !== id));
+        setCurrentChildId(payload.data.id);
+        const itemsResponse = await fetch(`/api/items?childId=${encodeURIComponent(payload.data.id)}`);
+        const itemsPayload = await itemsResponse.json();
+        if (itemsResponse.ok && itemsPayload.success) setItems((prev) => [...prev, ...itemsPayload.data]);
+      } else {
+        setChildren((prev) => prev.map((child) => child.id === id ? payload.data : child));
+      }
+    } catch (e) {
+      console.warn('Child save sync failed; changes remain in this user\'s local cache.', e);
+    }
   }, []);
 
   // 删除孩子

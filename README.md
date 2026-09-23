@@ -71,14 +71,20 @@ cd ~/coding/bentocare
 # 2. 安装依赖
 pnpm install
 
-# 3. 生成 Prisma Client
-pnpm prisma:generate
+# 3. 配置环境变量（本地数据库地址与随机会话密钥）
+# AUTH_SECRET 建议使用 `openssl rand -base64 32` 生成
+export POSTGRES_PRISMA_URL="postgresql://..."
+export POSTGRES_URL_NON_POOLING="postgresql://..."
+export AUTH_SECRET="replace-with-a-random-32-byte-secret"
 
-# 4. 启动开发服务器
+# 4. 同步数据库结构并生成 Prisma Client
+pnpm prisma:push
+
+# 5. 启动开发服务器
 pnpm dev
 ```
 
-在手机浏览器或电脑打开：`http://localhost:3000`
+在手机浏览器或电脑打开：`http://localhost:43127`
 
 ### 生产环境构建
 
@@ -94,7 +100,15 @@ pnpm start
 1. 将代码推送至 GitHub 仓库。
 2. 登录 [Vercel](https://vercel.com/) 并导入该仓库。
 3. 在项目控制台中点击 **Storage** -> **Create Database** -> **Postgres** 创建并连接数据库。
-4. Vercel 将自动注入数据库环境变量，部署即刻生效。
+4. 在 Environment Variables 中设置 `AUTH_SECRET`（使用独立的高强度随机值）；Vercel 会自动注入数据库连接变量。
+5. 首次部署前执行 `pnpm prisma:push`（或按团队的 Prisma migration 流程发布）以创建 `User` 表并为 `Child` 增加 `userId`。
+
+## 🔐 账户与数据隔离
+
+- 首次打开可注册账号，密码使用 scrypt 加盐哈希保存。
+- 登录状态由 30 天有效的服务端签名会话令牌维持；令牌放在 `HttpOnly` Cookie 中，并支持 API 的 `Authorization: Bearer <token>` 验证。
+- 孩子档案归属于用户，服务项目、考勤和预付款均通过该归属校验，不能仅凭猜测 ID 跨账户读写。
+- 浏览器只保存公开的最近登录资料和以用户 ID 分区的离线缓存，不保存可被脚本读取的令牌。
 
 ---
 

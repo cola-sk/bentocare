@@ -11,8 +11,8 @@ export async function POST(request: Request) {
     if (!/^[a-z0-9_.-]{3,32}$/.test(username)) {
       return NextResponse.json({ success: false, error: '用户名需为 3–32 位字母、数字或 ._-' }, { status: 400 });
     }
-    if (password.length < 8) {
-      return NextResponse.json({ success: false, error: '密码至少需要 8 位' }, { status: 400 });
+    if (password.length < 4) {
+      return NextResponse.json({ success: false, error: '密码至少需要 4 位' }, { status: 400 });
     }
     if (!displayName || displayName.length > 40) {
       return NextResponse.json({ success: false, error: '请填写 1–40 个字符的显示名称' }, { status: 400 });

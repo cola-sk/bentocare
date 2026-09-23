@@ -55,8 +55,8 @@ export async function POST(request: Request) {
 
     // 检查是否是批量保存
     if (Array.isArray(body)) {
-      const childIds = [...new Set(body.map((rec) => rec.childId))];
-      const itemIds = [...new Set(body.map((rec) => rec.itemId))];
+      const childIds = Array.from(new Set(body.map((rec) => rec.childId)));
+      const itemIds = Array.from(new Set(body.map((rec) => rec.itemId)));
       if (childIds.length !== 1 || !childIds[0]) return NextResponse.json({ success: false, error: '批量记录必须属于同一孩子' }, { status: 400 });
       const ownedItems = await prisma.serviceItem.findMany({ where: { id: { in: itemIds }, childId: childIds[0], child: { userId: auth.user.id } }, select: { id: true, childId: true } });
       if (ownedItems.length !== itemIds.length) return NextResponse.json({ success: false, error: '存在无权访问的服务项目' }, { status: 403 });

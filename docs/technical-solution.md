@@ -58,14 +58,23 @@ $$\text{核销后结余差额} = \text{总预付金额} - \text{总实际应付�
 
 ```mermaid
 erDiagram
+    User ||--o{ Child : "拥有"
     Child ||--o{ ServiceItem : "拥有"
     Child ||--o{ AttendanceRecord : "拥有"
     Child ||--o{ PrepaidRecord : "拥有"
     ServiceItem ||--o{ AttendanceRecord : "关联考勤"
     ServiceItem ||--o{ PrepaidRecord : "关联预付"
 
+    User {
+        string id PK
+        string username UK
+        string passwordHash
+        int tokenVersion
+    }
+
     Child {
         string id PK
+        string userId FK
         string name
         string avatar
         string grade

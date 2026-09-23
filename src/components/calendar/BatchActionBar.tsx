@@ -36,7 +36,7 @@ export function BatchActionBar({ summary, onOpenToday, onOpenBills }: BatchActio
           onClick={onOpenToday}
           className="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-lg transition-colors active:scale-95 shadow-xs"
         >
-          立即打卡
+          立即记录
         </button>
       </div>
 

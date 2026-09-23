@@ -43,15 +43,15 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin text-brand-500 mb-2" />
-        <span className="text-xs font-medium">伴学小账加载中...</span>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-stone-400">
+        <Loader2 className="w-6 h-6 animate-spin text-brand-500 mb-2" />
+        <span className="text-xs">加载中...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-3.5 pb-4">
       {/* 顶部导航与孩子选择器 */}
       <Header
         childrenList={children}
@@ -62,8 +62,8 @@ export default function CalendarPage() {
       />
 
       {/* 核心内容区 */}
-      <div className="px-4 flex flex-col gap-4">
-        {/* 今日快速打卡与对账概要卡片 */}
+      <div className="px-4 flex flex-col gap-3">
+        {/* 今日状态与对账微卡 */}
         <BatchActionBar
           summary={monthlySummary}
           onOpenToday={handleOpenToday}

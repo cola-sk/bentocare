@@ -8,11 +8,25 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// 登录用户。所有业务数据都必须从用户的孩子档案向下关联，避免跨用户访问。
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  displayName  String
+  passwordHash String
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  children     Child[]
+}
+
 // 孩子档案
 model Child {
   id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String
-  avatar      String?            @default("👶")
+  avatar      String?            @default("Smile")
   grade       String?            @default("一年级")
   isDefault   Boolean            @default(false)
   createdAt   DateTime           @default(now())
@@ -20,6 +34,8 @@ model Child {
   items       ServiceItem[]
   attendances AttendanceRecord[]
   prepaids    PrepaidRecord[]
+
+  @@index([userId])
 }
 
 // 托管/就餐等服务项目
@@ -28,31 +44,35 @@ model ServiceItem {
   childId      String
   child        Child              @relation(fields: [childId], references: [id], onDelete: Cascade)
   name         String             // 项目名，如：学校午餐、小饭桌、晚托、校车接送
-  icon         String             @default("🍱")
+  icon         String             @default("Utensils")
   color        String             @default("#f97316")
   billingType  String             @default("PER_MONTH") // PER_DAY (按天计费) | PER_MONTH (按月预付+缺勤退费)
   dayPrice     Float              @default(0) // 单日单价 (元/天)
   monthPrice   Float              @default(0) // 包月单价 (元/月)
   refundPerDay Float              @default(0) // 缺勤退费基准 (元/天)
-  refundMode   String             @default("FIXED") // FIXED(固定单日额) | WORKDAY_DIVIDED(按当月工作日折算)
-  isActive     Boolean            @default(true)
-  sortOrder    Int                @default(0)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  attendances  AttendanceRecord[]
-  prepaids     PrepaidRecord[]
+  refundMode        String             @default("FIXED") // FIXED(固定单日额) | WORKDAY_DIVIDED(按当月工作日折算) | FIXED_DAYS_DIVIDED(按固定天数折算) | CALENDAR_DIVIDED(按自然日折算)
+  refundFixedDays   Float?             @default(22) // 当按固定天数折算时的固定天数 (默认 22 天)
+  defaultChildCount Int                @default(1) // 默认孩子人数 (如 1人, 2人)
+  applicableDays    String?            @default("WORKDAY") // 适用日期自由组合，逗号分隔，如 "WORKDAY,WEEKEND"
+  isActive          Boolean            @default(true)
+  sortOrder         Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  attendances       AttendanceRecord[]
+  prepaids          PrepaidRecord[]
 }
 
 // 每日打卡考勤
 model AttendanceRecord {
-  id        String      @id @default(cuid())
-  childId   String
-  child     Child       @relation(fields: [childId], references: [id], onDelete: Cascade)
-  itemId    String
-  item      ServiceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  date      String      // YYYY-MM-DD
-  status    String      // PRESENT(出勤/用餐) | ABSENT(请假/缺席) | OFF(休息/非托管)
-  notes     String?     // 请假原因或备注
+  id         String      @id @default(cuid())
+  childId    String
+  child      Child       @relation(fields: [childId], references: [id], onDelete: Cascade)
+  itemId     String
+  item       ServiceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  date       String      // YYYY-MM-DD
+  status     String      // PRESENT(出勤/用餐) | ABSENT(请假/缺席) | OFF(休息/非托管)
+  childCount Int         @default(1) // 记录出勤/请假的孩子人数
+  notes      String?     // 请假原因或备注
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 

@@ -4,8 +4,8 @@ import { useLedgerStore } from '@/hooks/useLedgerStore';
 import { Header } from '@/components/layout/Header';
 import { ChildManager } from '@/components/settings/ChildManager';
 import { ItemManager } from '@/components/settings/ItemManager';
+import { HolidayManager } from '@/components/settings/HolidayManager';
 import { DataBackup } from '@/components/settings/DataBackup';
-import { HeartHandshake, Sparkles, ShieldCheck } from 'lucide-react';
 
 export default function SettingsPage() {
   const {
@@ -16,6 +16,8 @@ export default function SettingsPage() {
     currentChildItems,
     currentMonth,
     setCurrentMonth,
+    holidaySyncing,
+    syncHolidays,
     saveChild,
     deleteChild,
     saveItem,
@@ -26,7 +28,7 @@ export default function SettingsPage() {
   } = useLedgerStore();
 
   return (
-    <div className="flex flex-col gap-4 pb-6">
+    <div className="flex flex-col gap-3.5 pb-6">
       {/* 顶部导航 */}
       <Header
         childrenList={children}
@@ -37,7 +39,7 @@ export default function SettingsPage() {
         showMonthNav={false}
       />
 
-      <div className="px-4 flex flex-col gap-4">
+      <div className="px-4 flex flex-col gap-3.5">
         {/* 孩子档案配置 */}
         <ChildManager
           childrenList={children}
@@ -55,23 +57,23 @@ export default function SettingsPage() {
           onDeleteItem={deleteItem}
         />
 
-        {/* 数据备份、恢复与云端持久化 */}
+        {/* 中国节假日与调休识别管理 */}
+        <HolidayManager
+          currentMonth={currentMonth}
+          holidaySyncing={holidaySyncing}
+          onSyncHolidays={syncHolidays}
+        />
+
+        {/* 数据备份与同步 */}
         <DataBackup
           onExportJSON={exportJSON}
           onImportJSON={importJSON}
           onResetToDefault={resetToDefault}
         />
 
-        {/* 底部关于卡片 */}
-        <div className="text-center text-slate-400 text-xs py-4 flex flex-col items-center gap-1">
-          <div className="flex items-center gap-1 font-semibold text-slate-600">
-            <HeartHandshake className="w-4 h-4 text-brand-500" />
-            <span>伴学小账 (BentoCare)</span>
-          </div>
-          <p className="text-[11px] text-slate-400 max-w-xs">
-            陪伴孩子上学成长 · 每一笔托管、午餐与考勤退费都清晰明了
-          </p>
-          <span className="text-[10px] text-slate-300 mt-1">版本 v1.0.0 · 支持 PWA 与多端同步</span>
+        {/* 底部轻量版本信息 */}
+        <div className="text-center text-[10px] text-stone-300 py-3">
+          伴学小账 · BentoCare v1.0.0
         </div>
       </div>
     </div>

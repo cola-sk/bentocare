@@ -30,8 +30,8 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-lg pb-safe">
-      <div className="max-w-md mx-auto flex items-center justify-around h-16 px-4">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#faf9f6]/95 backdrop-blur-sm border-t border-stone-200/80 pb-safe">
+      <div className="max-w-md mx-auto flex items-center justify-around h-14 px-3">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -39,21 +39,26 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 select-none',
+                'flex flex-col items-center justify-center flex-1 py-1 transition-colors select-none',
                 item.active
-                  ? 'text-brand-600 font-semibold scale-105'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'text-brand-600 font-semibold'
+                  : 'text-stone-400 hover:text-stone-600'
               )}
             >
-              <div
+              <Icon
                 className={cn(
-                  'relative p-1 rounded-full transition-colors',
-                  item.active && 'bg-brand-50 text-brand-600'
+                  'w-4 h-4 transition-transform',
+                  item.active ? 'text-brand-600 stroke-[2.2]' : 'text-stone-400 stroke-[1.8]'
+                )}
+              />
+              <span
+                className={cn(
+                  'text-[10px] mt-1 tracking-tight',
+                  item.active ? 'text-brand-600' : 'text-stone-400'
                 )}
               >
-                <Icon className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] mt-0.5 tracking-tight">{item.label}</span>
+                {item.label}
+              </span>
             </Link>
           );
         })}

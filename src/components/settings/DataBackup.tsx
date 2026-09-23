@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Download, Upload, RotateCcw, Database, ShieldCheck, Check } from 'lucide-react';
+import { Download, Upload, RotateCcw, Database, Check } from 'lucide-react';
 
 interface DataBackupProps {
   onExportJSON: () => void;
@@ -41,8 +41,8 @@ export function DataBackup({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-4 shadow-card border border-slate-100 flex flex-col gap-3">
-      <div className="text-sm font-bold text-slate-800">数据管理与同步</div>
+    <div className="bg-white rounded-xl p-4 border border-stone-200/80 shadow-xs flex flex-col gap-3">
+      <div className="text-xs font-semibold text-stone-900">数据备份与同步</div>
 
       {/* 隐藏的文件输入 */}
       <input
@@ -56,25 +56,25 @@ export function DataBackup({
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={onExportJSON}
-          className="flex items-center justify-center gap-1.5 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 text-xs font-semibold transition-all active:scale-95"
+          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200/80 text-stone-700 text-xs font-medium transition-colors"
         >
-          <Download className="w-4 h-4 text-brand-500" />
-          <span>导出完整备份 (JSON)</span>
+          <Download className="w-3.5 h-3.5 text-stone-500" />
+          <span>导出备份 (JSON)</span>
         </button>
 
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center justify-center gap-1.5 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 text-xs font-semibold transition-all active:scale-95"
+          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200/80 text-stone-700 text-xs font-medium transition-colors"
         >
           {importSuccess ? (
             <>
-              <Check className="w-4 h-4 text-emerald-500" />
-              <span className="text-emerald-600">导入成功</span>
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-emerald-700 font-medium">导入成功</span>
             </>
           ) : (
             <>
-              <Upload className="w-4 h-4 text-emerald-500" />
-              <span>导入备份文件</span>
+              <Upload className="w-3.5 h-3.5 text-stone-500" />
+              <span>导入备份</span>
             </>
           )}
         </button>
@@ -86,26 +86,19 @@ export function DataBackup({
             onResetToDefault();
           }
         }}
-        className="w-full py-2.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+        className="w-full py-2 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50/50 text-xs font-medium transition-colors flex items-center justify-center gap-1"
       >
         <RotateCcw className="w-3.5 h-3.5" />
-        <span>重置为默认演示数据</span>
+        <span>恢复默认数据</span>
       </button>
 
-      {/* Vercel Postgres 云存储状态卡片 */}
-      <div className="mt-2 p-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl flex flex-col gap-2">
-        <div className="flex items-center justify-between text-xs font-bold">
-          <div className="flex items-center gap-1.5 text-brand-400">
-            <Database className="w-4 h-4" />
-            <span>Vercel Postgres 云数据库存储</span>
-          </div>
-          <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
-            已就绪 / 自动同步
-          </span>
+      {/* 云端存储说明 */}
+      <div className="pt-2.5 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
+        <div className="flex items-center gap-1">
+          <Database className="w-3.5 h-3.5 text-stone-400" />
+          <span>支持本地存储与 Postgres 云端同步</span>
         </div>
-        <div className="text-[11px] text-slate-300 leading-relaxed">
-          本项目已全面配置 Vercel Postgres Prisma ORM 数据模型。部署到 Vercel 时直接在控制台绑定 Storage Postgres，家庭成员即可通过手机随时随地多端打卡同步。
-        </div>
+        <span className="text-[10px] text-emerald-700 font-medium">已就绪</span>
       </div>
     </div>
   );

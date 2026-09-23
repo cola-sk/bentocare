@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { calculateMonthlySummary } from '@/lib/calculator';
 import { DEFAULT_CHILD, DEFAULT_ITEMS, generateInitialAttendances } from '@/lib/sample-data';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
+  const auth = await requireAuth(request);
+  if ('response' in auth) return auth.response;
   try {
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('childId');
@@ -14,21 +17,17 @@ export async function GET(request: Request) {
     }
 
     // 查询 child, items, attendances, prepaids
-    let child = await prisma.child.findUnique({ where: { id: childId } });
-    if (!child) child = DEFAULT_CHILD as any;
+    const child = await prisma.child.findFirst({ where: { id: childId, userId: auth.user.id } });
+    if (!child) return NextResponse.json({ success: false, error: '孩子档案不存在' }, { status: 404 });
 
     let items = await prisma.serviceItem.findMany({
       where: { childId, isActive: true },
       orderBy: { sortOrder: 'asc' },
     });
-    if (items.length === 0) items = DEFAULT_ITEMS as any;
 
     let attendances = await prisma.attendanceRecord.findMany({
       where: { childId, date: { startsWith: month } },
     });
-    if (attendances.length === 0) {
-      attendances = generateInitialAttendances(childId, month) as any;
-    }
 
     const prepaids = await prisma.prepaidRecord.findMany({
       where: { childId, month },
@@ -44,16 +43,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ success: true, data: summary });
   } catch (err: any) {
-    console.warn('DB bills query error, fallback:', err?.message);
-    const { searchParams } = new URL(request.url);
-    const month = searchParams.get('month') || '2026-09';
-    const summary = calculateMonthlySummary(
-      DEFAULT_CHILD,
-      month,
-      DEFAULT_ITEMS,
-      generateInitialAttendances('child-1', month),
-      []
-    );
-    return NextResponse.json({ success: true, fallback: true, data: summary });
+    console.warn('DB bills query error:', err?.message);
+    return NextResponse.json({ success: false, error: '读取账单失败' }, { status: 500 });
   }
 }

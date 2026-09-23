@@ -1,7 +1,7 @@
 'use client';
 
-import { MonthlyBillSummary, AttendanceStatus } from '@/lib/types';
-import { Sparkles, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { MonthlyBillSummary } from '@/lib/types';
+import { CalendarCheck2, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
@@ -14,62 +14,53 @@ interface BatchActionBarProps {
 export function BatchActionBar({ summary, onOpenToday, onOpenBills }: BatchActionBarProps) {
   const todayStr = format(new Date(), 'M月d日 EEEE', { locale: zhCN });
 
-  // 统计当月总出勤与请假次数
-  let totalPresentCount = 0;
-  let totalAbsentCount = 0;
-  for (const itemBill of summary.itemBills) {
-    totalPresentCount += itemBill.presentDays;
-    totalAbsentCount += itemBill.absentDays;
-  }
-
   return (
-    <div className="flex flex-col gap-3">
-      {/* 今日打卡快速条 */}
-      <div className="bg-gradient-to-r from-brand-500 to-amber-500 rounded-3xl p-4 text-white shadow-card flex items-center justify-between">
-        <div>
-          <div className="text-[11px] font-medium text-amber-100 flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>今日打卡 · {todayStr}</span>
+    <div className="bg-white rounded-xl p-3.5 border border-stone-200/80 shadow-xs flex flex-col gap-3">
+      {/* 今日快速打卡行 */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-brand-600">
+            <CalendarCheck2 className="w-4 h-4" />
           </div>
-          <div className="text-base font-extrabold mt-0.5 tracking-tight">
-            {summary.child.name} 今日考勤记录
+          <div>
+            <div className="text-xs font-semibold text-stone-900">
+              今日考勤 · {summary.child.name}
+            </div>
+            <div className="text-[11px] text-stone-400">
+              {todayStr}
+            </div>
           </div>
         </div>
 
         <button
           onClick={onOpenToday}
-          className="px-3.5 py-2 bg-white text-brand-600 font-bold text-xs rounded-xl shadow-sm hover:bg-amber-50 active:scale-95 transition-all flex items-center gap-1"
+          className="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs rounded-lg transition-colors active:scale-95 shadow-xs"
         >
-          <span>立即打卡</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          立即打卡
         </button>
       </div>
 
-      {/* 本月快速对账微卡 */}
-      <div
-        onClick={onOpenBills}
-        className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-subtle flex items-center justify-between cursor-pointer hover:border-brand-200 transition-colors"
-      >
+      {/* 当月数据摘要分隔线 */}
+      <div className="pt-2.5 border-t border-stone-100 flex items-center justify-between text-xs">
         <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <span className="text-[11px] text-slate-400 font-medium">当月缺勤退费</span>
-            <span className="text-base font-extrabold text-rose-500">
-              ¥{summary.totalRefund}
-            </span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[11px] text-stone-400">缺勤应退</span>
+            <span className="font-semibold text-rose-600">¥{summary.totalRefund}</span>
           </div>
-          <div className="w-[1px] h-6 bg-slate-100" />
-          <div className="flex flex-col">
-            <span className="text-[11px] text-slate-400 font-medium">实际应付净额</span>
-            <span className="text-base font-extrabold text-slate-800">
-              ¥{summary.totalActualCost}
-            </span>
+          <div className="w-px h-3 bg-stone-200" />
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[11px] text-stone-400">实付净额</span>
+            <span className="font-semibold text-stone-900">¥{summary.totalActualCost}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-xs text-brand-600 font-semibold">
-          <span>查看明细</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </div>
+        <button
+          onClick={onOpenBills}
+          className="flex items-center gap-0.5 text-[11px] text-brand-700 hover:text-brand-900 font-medium transition-colors"
+        >
+          <span>明细</span>
+          <ArrowRight className="w-3 h-3" />
+        </button>
       </div>
     </div>
   );

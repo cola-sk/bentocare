@@ -30,6 +30,7 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className="bg-stone-100 text-stone-800 min-h-screen flex justify-center antialiased selection:bg-brand-500 selection:text-white">
         <AuthBoundary>
+          {children}
           <BottomNav />
         </AuthBoundary>
       </body>

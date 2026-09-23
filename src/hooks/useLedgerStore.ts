@@ -302,7 +302,11 @@ export function useLedgerStore() {
 
   // 删除孩子
   const deleteChild = useCallback(async (childId: string) => {
-    setChildren((prev) => prev.filter((c) => c.id !== childId));
+    const remainingChildren = children.filter((child) => child.id !== childId);
+    setChildren(remainingChildren);
+    if (currentChildId === childId) {
+      setCurrentChildId(remainingChildren[0].id);
+    }
     setItems((prev) => prev.filter((i) => i.childId !== childId));
     setAttendances((prev) => prev.filter((a) => a.childId !== childId));
     setPrepaids((prev) => prev.filter((p) => p.childId !== childId));
@@ -310,7 +314,7 @@ export function useLedgerStore() {
     try {
       await fetch(`/api/children?id=${childId}`, { method: 'DELETE' });
     } catch (e) {}
-  }, []);
+  }, [children, currentChildId]);
 
   // 保存/编辑托管项目
   const saveItem = useCallback(

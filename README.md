@@ -103,6 +103,12 @@ pnpm start
 4. 在 Environment Variables 中设置 `AUTH_SECRET`（使用独立的高强度随机值）；Vercel 会自动注入数据库连接变量。
 5. 首次部署前执行 `pnpm prisma:push`（或按团队的 Prisma migration 流程发布）以创建 `User` 表并为 `Child` 增加 `userId`。
 
+### 在 Android Chrome 安装到桌面
+
+通过 HTTPS 打开已部署的网站，在 Chrome 菜单中选择 **安装应用**（部分版本显示为 **添加到主屏幕**，进入后选择安装）。安装后会以独立窗口启动。首次打开需要联网登录；应用数据仍通过服务端同步，断网时会显示重试页面。
+
+本地开发地址 `http://localhost:43127` 只适合在开发电脑上验证；手机访问局域网 HTTP 地址不满足 Chrome 的安全来源要求，需使用 HTTPS 部署地址测试安装。
+
 ## 🔐 账户与数据隔离
 
 - 首次打开可注册账号，密码使用 scrypt 加盐哈希保存。
